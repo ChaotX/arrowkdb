@@ -11,6 +11,7 @@
 #include <parquet/exception.h>
 #include <arrow/pretty_print.h>
 
+#include <arrow/api.h>
 #include <arrow/buffer.h>
 #include <arrow/record_batch.h>
 #include <arrow/ipc/reader.h>
@@ -201,10 +202,7 @@ K writeParquet(K parquet_file, K schema_id, K array_data, K options)
   // Parquet version
   std::string parquet_version;
   write_options.GetStringOption(kx::arrowkdb::Options::PARQUET_VERSION, parquet_version);
-  if (parquet_version == "V2.0") {
-    parquet_props_builder.version(parquet::ParquetVersion::PARQUET_2_0);
-    parquet_props_builder.data_page_version(parquet::ParquetDataPageVersion::V2);
-  } else if (parquet_version == "V2.4") {
+  if (parquet_version == "V2.4") {
     parquet_props_builder.version(parquet::ParquetVersion::PARQUET_2_4);
     parquet_props_builder.data_page_version(parquet::ParquetDataPageVersion::V2);
   } else if (parquet_version == "V2.6") {
@@ -252,7 +250,7 @@ K readParquetSchema(K parquet_file)
       arrow::default_memory_pool()));
 
   std::unique_ptr<parquet::arrow::FileReader> reader;
-  PARQUET_THROW_NOT_OK(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &reader));
+  PARQUET_ASSIGN_OR_THROW(reader, parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
 
   std::shared_ptr<arrow::Schema> schema;
   PARQUET_THROW_NOT_OK(reader->GetSchema(&schema));
@@ -286,7 +284,7 @@ K readParquetNumRowGroups(K parquet_file)
       arrow::default_memory_pool()));
 
   std::unique_ptr<parquet::arrow::FileReader> reader;
-  PARQUET_THROW_NOT_OK(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &reader));
+  PARQUET_ASSIGN_OR_THROW(reader, parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
 
   return ki(reader->num_row_groups());
 
@@ -328,7 +326,7 @@ K readParquetData(K parquet_file, K options)
   }
 
   std::unique_ptr<parquet::arrow::FileReader> reader;
-  PARQUET_THROW_NOT_OK(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &reader));
+  PARQUET_ASSIGN_OR_THROW(reader, parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
 
   reader->set_use_threads(parquet_multithreaded_read);
 
@@ -385,7 +383,7 @@ K readParquetColumn(K parquet_file, K column_index, K options)
       arrow::default_memory_pool()));
 
   std::unique_ptr<parquet::arrow::FileReader> reader;
-  PARQUET_THROW_NOT_OK(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &reader));
+  PARQUET_ASSIGN_OR_THROW(reader, parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
 
   std::shared_ptr<::arrow::ChunkedArray> chunked_array;
   PARQUET_THROW_NOT_OK(reader->ReadColumn(column_index->i, &chunked_array));
@@ -448,7 +446,7 @@ K readParquetRowGroups(K parquet_file, K row_groups, K columns, K options)
   }
 
   std::unique_ptr<parquet::arrow::FileReader> reader;
-  PARQUET_THROW_NOT_OK(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &reader));
+  PARQUET_ASSIGN_OR_THROW(reader, parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
 
   reader->set_use_threads(parquet_multithreaded_read);
 
@@ -593,7 +591,7 @@ K readArrowSchema(K arrow_file)
   SchemaContainsNullable(schema);
   for (auto field : schema->fields()) {
     kx::arrowkdb::GetFieldStore()->Add(field);
-    kx::arrowkdb::GetDatatypeStore()->Instance()->Add(field->type());
+    kx::arrowkdb::GetDatatypeStore()->Add(field->type());
   }
 
   // Return the new schema_id
@@ -772,7 +770,8 @@ K parseArrowSchema(K char_array)
   if (char_array->t != KG && char_array->t != KC)
     return krr((S)"char_array not 4|10h");
 
-  auto buf_reader = std::make_shared<arrow::io::BufferReader>(kG(char_array), char_array->n);
+  auto buffer = std::make_shared<arrow::Buffer>(kG(char_array), char_array->n);
+  auto buf_reader = std::make_shared<arrow::io::BufferReader>(buffer);
   std::shared_ptr<arrow::ipc::RecordBatchReader> reader;
   PARQUET_ASSIGN_OR_THROW(reader, arrow::ipc::RecordBatchStreamReader::Open(buf_reader));
 
@@ -804,7 +803,8 @@ K parseArrowData(K char_array, K options)
   // Type mapping overrides
   kx::arrowkdb::TypeMappingOverride type_overrides{ read_options };
 
-  auto buf_reader = std::make_shared<arrow::io::BufferReader>(kG(char_array), char_array->n);
+  auto buffer = std::make_shared<arrow::Buffer>(kG(char_array), char_array->n);
+  auto buf_reader = std::make_shared<arrow::io::BufferReader>(buffer);
   std::shared_ptr<arrow::ipc::RecordBatchReader> reader;
   PARQUET_ASSIGN_OR_THROW(reader, arrow::ipc::RecordBatchStreamReader::Open(buf_reader));
 

@@ -49,6 +49,8 @@ fi
 Q_SCRIPT_DIR=${QHOME}${Q_PATH_SEP}
 Q_SHARED_LIB_DIR="${QHOME}${Q_PATH_SEP}${Q_HOST_TYPE}${Q_SHARED_LIB_DIR}${Q_MACH_TYPE}${Q_PATH_SEP}"
 
+echo "Shared lib dir: ${Q_SHARED_LIB_DIR}"
+
 # check destination directory exists
 if [ ! -w "$Q_SCRIPT_DIR" ]; then
     echo "ERROR: Directory '$Q_SCRIPT_DIR' does not exist"
