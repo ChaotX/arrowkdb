@@ -29,7 +29,7 @@ find_package(Arrow REQUIRED)
 if(ARROW_SO_VERSION LESS "1000")
   set(CMAKE_CXX_STANDARD 14)
 else()
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 find_library(ARROW_LIBRARY
