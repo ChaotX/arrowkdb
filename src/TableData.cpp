@@ -2,7 +2,7 @@
 #include <memory>
 #include <iostream>
 
-#ifndef _WIN32
+#ifndef !defined(_WIN32) && !defined(DISABLE_ORC)
 #include <arrow/adapters/orc/adapter.h>
 #endif
 
@@ -855,6 +855,8 @@ K readORCData(K orc_file, K options)
 
 #ifdef _WIN32
   return krr((S)"ORC files are not supported on Windows");
+#elif defined(DISABLE_ORC)
+  return krr((S)"ORC support disabled in this build");
 #else
   if (!kx::arrowkdb::IsKdbString(orc_file))
     return krr((S)"orc_file not 11h or 0 of 10h");
@@ -925,6 +927,8 @@ K readORCSchema(K orc_file)
 
 #ifdef _WIN32
   return krr((S)"ORC files are not supported on Windows");
+#elif defined(DISABLE_ORC)
+  return krr((S)"ORC support disabled in this build");
 #else
   if (!kx::arrowkdb::IsKdbString(orc_file))
     return krr((S)"orc_file not 11h or 0 of 10h");
@@ -964,6 +968,8 @@ K writeORC(K orc_file, K schema_id, K array_data, K options)
 
 #ifdef _WIN32
   return krr((S)"ORC files are not supported on Windows");
+#elif defined(DISABLE_ORC)
+  return krr((S)"ORC support disabled in this build");
 #else
   if (!kx::arrowkdb::IsKdbString(orc_file))
     return krr((S)"orc_file not 11h or 0 of 10h");
