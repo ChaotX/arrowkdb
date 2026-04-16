@@ -5,6 +5,11 @@ endif()
 cmake_minimum_required(VERSION 3.1.3)
 project(arrowkdb CXX)
 
+option(DISABLE_ORC "Disable ORC support" OFF)
+if(DISABLE_ORC)
+    add_definitions(-DDISABLE_ORC)
+endif()
+
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${ARROW_INSTALL}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -DKXVER=3")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
