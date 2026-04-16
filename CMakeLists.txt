@@ -78,7 +78,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 # Convert QHOME env to valid cmake path
-file(TO_CMAKE_PATH $ENV{QHOME} QHOME_PATH)
+file(TO_CMAKE_PATH "$ENV{QHOME}" QHOME_PATH)
 
 # Copy built shared object after build instead of during installation
 add_custom_command(TARGET ${MY_LIBRARY_NAME}
