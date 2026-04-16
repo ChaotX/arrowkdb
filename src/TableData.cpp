@@ -2,7 +2,7 @@
 #include <memory>
 #include <iostream>
 
-#ifndef !defined(_WIN32) && !defined(DISABLE_ORC)
+#if !defined(_WIN32) && !defined(DISABLE_ORC)
 #include <arrow/adapters/orc/adapter.h>
 #endif
 
